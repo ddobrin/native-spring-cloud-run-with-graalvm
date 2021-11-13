@@ -189,8 +189,6 @@ $ kp image save hello-function-native \
 
 ## Cloud Run Deploy
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/gx8VTa1c8DA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 Build the image as a JVM or native image and deploy it to Cloud Run from the command-line. You can also deploy directly from the GCP console.
 
 Note: Please note the Project ID of the project where you wish to deploy your service
