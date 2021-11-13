@@ -233,7 +233,7 @@ Service [hello-function] revision [hello-function-00002-ceb] has been deployed a
 # retrieve the URL where the app can be accessed and send a request
 $ gcloud run services list
    SERVICE         REGION       URL                                             LAST DEPLOYED BY      LAST DEPLOYED AT
-✔  hello-function  us-central1  https://hello-function-v6qqi65qxq-uc.a.run.app  dan.dobrin@gmail.com  2021-11-13T20:32:37.995100Z
+✔  hello-function  us-central1  https://hello-function-v6qqi65qxq-uc.a.run.app  abc@gmail.com  2021-11-13T20:32:37.995100Z
 
 $ curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-v6qqi65qxq-uc.a.run.app -d "from a Function"
 Hello: from a Function, Source: from-function
