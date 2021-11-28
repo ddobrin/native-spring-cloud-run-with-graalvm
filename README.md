@@ -1,8 +1,6 @@
 This sample app provides a simple `Hello` web app based on Spring Boot and Spring Cloud Functions.
 
-`Instructions are provided`:
-* to build JVM or Native images for the same app
-* provide multiple deployment options on Cloud Run
+Learn how to build JVM and Native Java images and deploy them on the CloudRun serverless platform.
 
 `Currently Tracked Versions:`
 * Spring Boot 2.5.5 - as of September 2021
@@ -14,22 +12,14 @@ This sample app provides a simple `Hello` web app based on Spring Boot and Sprin
     *  OpenJDK Runtime Environment GraalVM CE 21.2.0 (build 11.0.11+8-jvmci-21.1-b05)
     *  OpenJDK 64-Bit Server VM GraalVM CE 21.1.0 (build 11.0.12+6-jvmci-21.2-b08, mixed mode, sharing)
     
-`This repo addresses the following topics`:
+`Main topics`:
 1. Build 
-  * Build a JVM / Native app image with the Spring Boot plugin and GraalVM
+  * Build a JVM / Native application image with the Spring Boot plugin and GraalVM
   * Build a JVM / Native Docker image with Java and Java Native Paketo Buildpacks 
 2. CI/CD integration - Build a JVM / Native Docker image with kpack
 3. Deploy 
   * Run locally
   * Deploy to Google Cloud Run
-
-Build Options:
-* JVM application, leveraging OpenJDK
-* Native Application, leveraging GraalVM
-
-Deployment Models:
-* Standalone web app
-* Google Cloud Run
 
 `Source code tree`:
 ```
@@ -56,6 +46,7 @@ src
 
 # Build
 
+## Build application images
 Building the code with the Spring Boot Maven wrapper leverages the following Maven profiles:
 * `native-image` - build a Spring Native image leveraging GraalVM
 * `jvm-image` - build a Spring JVM-based image leveraging OpenJDK
@@ -86,6 +77,7 @@ $ ./target/hello-function
 # test locally
 $ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Function"
 ```
+## Build Docker images
 
 ### Build code as a JVM image using the Spring Boot Maven plugin and Java Paketo Buildpacks
 ```bash 
@@ -182,7 +174,7 @@ Build the image as a JVM or native image and deploy it to Cloud Run from the com
 
 **Note**: Please note the Project ID of the project where you wish to deploy your service
 
-#### Build and Deploy
+#### Build
 ```shell
 # authorize the user to GCP
 $ gcloud auth list
