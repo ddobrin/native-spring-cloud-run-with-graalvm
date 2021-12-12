@@ -19,6 +19,8 @@
         <spring-native.version>0.10.4</spring-native.version>
         <native-buildtools.version>0.9.3</native-buildtools.version>
 
+        <log4j2.version>2.15.0</log4j2.version>
+        
         <jvm-image-type>jvm</jvm-image-type>
         <native-image-type>native</native-image-type>
         <registry>gcr.io/dans-project-331502</registry>
