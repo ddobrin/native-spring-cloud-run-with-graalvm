@@ -1,57 +1,58 @@
-This sample app provides a simple `Hello` web app based on Spring Boot and Spring Cloud Functions.
+[Last updated: April 28, 2022]
 
-Learn how to build JVM and Native Java images and deploy them on the CloudRun serverless platform.
+Learn how to build JVM and Native Java images and deploy them on the CloudRun serverless compute platform.
 
-`Currently Tracked Versions:`
-* Spring Boot 2.5.5 - as of September 2021
-* Spring Native 0.10.4 (Spring Native Beta) - as of September 2021
-* Native Buildtools 0.9.3 - as of September 2021
-* OpenJDK
-    * openjdk version "11.0.12" 2021-07-20
-* GraalVM CE
-    *  OpenJDK Runtime Environment GraalVM CE 21.2.0 (build 11.0.11+8-jvmci-21.1-b05)
-    *  OpenJDK 64-Bit Server VM GraalVM CE 21.1.0 (build 11.0.12+6-jvmci-21.2-b08, mixed mode, sharing)
-    
-`Main topics`:
+The sample app provides a simple `Hello` web app based on Spring Boot and Spring Cloud Functions, with a focus on building and running native images on a serveless platform, rather than the intricacies of the app itself.
+
+Major improvements - GraalVM 22.1.0:
+* Quick Build Mode for Native Image - significant UX improvement for Developers
+* Apple Silicon support
+
+[Full details - GraalVM 22.1: Developer experience improvements, Apple Silicon builds, and more](https://medium.com/graalvm/graalvm-22-1-developer-experience-improvements-apple-silicon-builds-and-more-b7ac9a0f6066)
+
+`Dive into`:
 1. Build 
-  * Build a JVM / Native application image with the Spring Boot plugin and GraalVM
-  * Build a JVM / Native Docker image with Java and Java Native Paketo Buildpacks 
-2. CI/CD integration - Build a JVM / Native Docker image with kpack
+    * Build a JVM / Native `Application image` with the Spring Boot plugin and GraalVM
+    * Build a JVM / Native `Docker image` with Java, respectively Java Native Paketo Buildpacks 
+2. Generate Native Tests
 3. Deploy 
-  * Run locally
-  * Deploy to Google Cloud Run
+    * Run locally
+    * Deploy to Google Cloud Run
+4. [Optional] First look at Quick Build Mode for Developers
 
-`Source code tree`:
-```
-src
-├── main
-│   ├── java
-│   │   └── com
-│   │       └── example
-│   │           └── hello
-│   │               └── SpringNativeFunctionApplication.java
-│   └── resources
-│       ├── application.properties
-│       ├── static
-│       └── templates
-└── test
-    └── java
-        └── com
-            └── example
-                └── hello
-                    └── SpringNativeFunctionApplicationTests.java
+`Tools and versions in use:`
+* Spring Boot 2.6.6
+* Spring Native 0.11.4 
+* Native Buildtools 0.9.11
+* Spring Cloud 2021.1.0
+* OpenJDK
+  * openjdk version "17.0.3" 2022-04-19
+* GraalVM CE
+  * OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06)
+  * OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06, mixed mode, sharing)
+* Java compatibility level: Java 11
+  * Java 17 is not supported in Paketo Java Native Buildpacks at this time
+  * Building app images with GraalVM and Spring Native has been tested for this codebase
 
-# The function used in this app is available in SpringNativeFunctionApplication.java
+# Installation
+Install GraalVM from:
+* [from GraalVM Github repo](https://github.com/graalvm/graalvm-ce-builds/releases)
+* [using Homebrew](https://github.com/graalvm/homebrew-tap)
+* SDKMan: `sdk install java 22.1.0.r17-grl`
+
+Install the native-image builder before building native executables: 
+```shell
+gu install native-image
 ```
 
 # Build
 
 ## Build application images
-Building the code with the Spring Boot Maven wrapper leverages the following Maven profiles:
+Building the code with the Spring Boot Maven wrapper uses the following `Maven profiles`:
 * `native-image` - build a Spring Native image leveraging GraalVM
 * `jvm-image` - build a Spring JVM-based image leveraging OpenJDK
 
-Building an executable application with the GraalVM compiler leverages the following Maven profile and requires the installation of the GraalVM and the native-image builder utility:
+Building an executable application with the GraalVM compiler requires the installation of the GraalVM and the native-image builder utility and leverages the following `Maven profile`:
 * `native`
 
 ### Build code as a JVM app using the Spring Boot Maven plugin with embedded Netty HTTP server
@@ -60,22 +61,23 @@ Building an executable application with the GraalVM compiler leverages the follo
 $ ./mvnw clean package spring-boot:run
 
 # test locally
-$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Function"
+$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a JVM app"
 ```
-### Build code as a Native JVM app using the GraalVM compiler with embedded Netty HTTP server
+### Build code as a Native Java app using the GraalVM compiler with embedded Netty HTTP server
 ```bash 
 # switch to the GraalVM JDK for this build
-# ex, when using SDKman
-$ sdk use java 21.2.0.r11-grl
+# ex, when using SDKman, validate that you use the GraaLVM compiler
+$ sdk use java 22.1.0.r17-grl
 
-# build and run code using
-$ ./mvnw clean package -Pnative
+# build and run code using GraalVM
+# generating native tests is skipped for reduced build latency
+$ ./mvnw clean package -Pnative -DskipTests
 
 # start the native executable
 $ ./target/hello-function
 
 # test locally
-$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Function"
+$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Native app"
 ```
 ## Build Docker images
 
@@ -91,79 +93,38 @@ $ ./mvnw clean spring-boot:build-image -Pjvm-image
 $ docker run -p 8080:8080 hello-function-jvm:latest
 
 # test Docker image locally
-$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Function"
+$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a JVM app running in a container"
 ```
 
 ### Build code as a Spring Native image using the Spring Boot Maven plugin and the Java Native Paketo Buildpacks
 ```bash 
 # build image with the CNB Paketo buildpack of your choice
-$ ./mvnw clean spring-boot:build-image -Pnative-image
+# generating native tests is skipped for reduced build latency
+$ ./mvnw clean spring-boot:build-image -Pnative-image -DskipTests
 
 # start Docker image
 $ docker run -p 8080:8080 hello-function-native:latest
 
 # test Docker image locally
-$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Function"
-```
-# CI/CD integration - Build a JVM / Native Docker image with KPACK
-
-To build an image with Java or Java Native Paketo Buildpacks with kpack, you can use the commands listed below.
-
-To start, install the tools as follows:
-* `kpack CLI` - https://github.com/vmware-tanzu/kpack-cli 
-  * kpack commands - https://github.com/vmware-tanzu/kpack-cli/blob/master/docs/kp.md 
-* `kpack` - https://github.com/pivotal/kpack 
-
-## Building JVM Docker images
-To build the JVM image with the Java Paketo Buildpack, please run:
-```shell
-$ kp image save hello-function-jvm \ 
-    --tag <your-repo-prefix>/hello-function:jvm \ 
-    --git https://github.com/ddobrin/native-spring-cloud-run-with-graalvm.git \
-    --git-revision main \
-    --cluster-builder base \ 
-    --env BP_JVM_VERSION=11 \
-    --env BP_MAVEN_BUILD_ARGUMENTS="-Dmaven.test.skip=true package spring-boot:repackage" \
-    --wait 
-
-* your-repo-prefix - prefix for your Container Registry. Ex. Docker-desktop hello-function:jvm, GCR gcr.io/pa-ddobrin/hello-function:jvm
-* tag - image tag
-* git - repo location 
-* local-path - to build from a local download of the repo, replace "git" with "local-path"
-        --local-path ~/native-spring-cloud-run-with-graalvm
-* git-revision - the code branch in Git
-* cluster-builder - the Paketo builder used to build the image
-* BP_JVM_VERSION - Java version to build for, accepts 8, 11
-* wait - if you wish to observe the build taking place
-* BP_MAVEN_BUILD_ARGUMENTS - kpack/TBS works declaratively in K8s, therefore requires instructions for the `repackaging` goal to be triggered; local machine is imperative and `package` in pom.xml is sufficient. 
+$ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Native app running in a container"
 ```
 
-## Building Java Native Docker images
-To build the JVM image with the Java Native Paketo Buildpack, please run:
-```shell
-$ kp image save hello-function-native \ 
-    --tag <your-repo-prefix>/hello-function:native \ 
-    --git https://github.com/ddobrin/native-spring-cloud-run-with-graalvm.git \
-    --git-revision main \
-    --cluster-builder tiny \ 
-    --env BP_BOOT_NATIVE_IMAGE=1 \
-    --env BP_JVM_VERSION=11 \
-    --env BP_MAVEN_BUILD_ARGUMENTS="-Dmaven.test.skip=true package spring-boot:repackage" \
-    --env BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS="-Dspring.spel.ignore=true -Dspring.xml.ignore=true -Dspring.native.remove-yaml-support=true --enable-all-security-services" \
-    --wait 
+# Generate Native Tests
+Testing Java code with JUnit 5 behaves exactly the same in native execution as with the JVM. Writing proper unit tests and generating native test images assists you in ensuring that the native image of the app will work in the same manner as on the JVM
 
-* your-repo-prefix - prefix for your Container Registry. Ex. Docker-desktop hello-function:native, GCR gcr.io/pa-ddobrin/hello-function:native 
-* tag - image tag
-* git - repo location 
-* local-path - to build from a local download of the repo, replace "git" with "local-path"
-        --local-path ~/native-spring-cloud-run-with-graalvm
-* git-revision - the code branch in Git
-* cluster-builder - the Paketo builder used to build the image
-* BP_BOOT_NATIVE_IMAGE - set to true builds a Spring Native image
-* BP_JVM_VERSION - Java version to build for, accepts 8, 11
-* wait - if you wish to observe the build taking place
-* BP_MAVEN_BUILD_ARGUMENTS - kpack/TBS works declaratively in K8s, therefore requires instructions for the `repackaging` goal to be triggered; local machine is imperative and `package` in pom.xml is sufficient. 
-* BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS - optimization arguments for the Native image to minimize image size
+The [Native Build Tools](https://graalvm.github.io/native-build-tools/latest/index.html) project provides plugins for different build tools to add support for building and testing native applications written in Java (or any other language compiled to JVM bytecode).
+
+To build native tests
+```bash 
+# switch to the GraalVM JDK for this build
+# ex, when using SDKman, validate that you use the GraaLVM compiler
+$ sdk use java 22.1.0.r17-grl
+
+# test the app with native tests
+$ ./mvnw -Pnative test
+
+# start the native test executable
+$ ./target/native-tests
 ```
 
 # Deploy
@@ -299,4 +260,82 @@ Hello: from an authenticated Function, Source: from-function
 # delete the service 
 $ gcloud run services delete hello-function --region us-central1
 
+```
+
+## Changelog
+April 28, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
+
+----------
+
+## [Optional - How to use Quick Build Mode for Development
+
+Quick Build mode significantly improves build latency by running the compiler in economy mode, with fewer optimizations, resulting in much faster builds.
+
+This is a Development feature, not recommended for Production.
+In Production, use the default compilation mode, which provides the best runtime performance and memory efficiency !
+
+To enable quick build mode, add `-Ob (capital “O”, lower case “b”)` when building with the native-image utility.
+
+
+
+
+## [Optional - CI/CD integration - Build a JVM / Native Docker image with KPACK OSS
+
+To build an image with Java or Java Native Paketo Buildpacks with kpack, you can use the commands listed below.
+
+To start, install the tools as follows:
+* `kpack CLI` - https://github.com/vmware-tanzu/kpack-cli 
+  * kpack commands - https://github.com/vmware-tanzu/kpack-cli/blob/master/docs/kp.md 
+* `kpack` - https://github.com/pivotal/kpack 
+
+## Building JVM Docker images
+To build the JVM image with the Java Paketo Buildpack, please run:
+```shell
+$ kp image save hello-function-jvm \ 
+    --tag <your-repo-prefix>/hello-function:jvm \ 
+    --git https://github.com/ddobrin/native-spring-cloud-run-with-graalvm.git \
+    --git-revision main \
+    --cluster-builder base \ 
+    --env BP_JVM_VERSION=11 \
+    --env BP_MAVEN_BUILD_ARGUMENTS="-Dmaven.test.skip=true package spring-boot:repackage" \
+    --wait 
+
+* your-repo-prefix - prefix for your Container Registry. Ex. Docker-desktop hello-function:jvm, GCR gcr.io/pa-ddobrin/hello-function:jvm
+* tag - image tag
+* git - repo location 
+* local-path - to build from a local download of the repo, replace "git" with "local-path"
+        --local-path ~/native-spring-cloud-run-with-graalvm
+* git-revision - the code branch in Git
+* cluster-builder - the Paketo builder used to build the image
+* BP_JVM_VERSION - Java version to build for, accepts 8, 11
+* wait - if you wish to observe the build taking place
+* BP_MAVEN_BUILD_ARGUMENTS - kpack/TBS works declaratively in K8s, therefore requires instructions for the `repackaging` goal to be triggered; local machine is imperative and `package` in pom.xml is sufficient. 
+```
+
+## Building Java Native Docker images
+To build the JVM image with the Java Native Paketo Buildpack, please run:
+```shell
+$ kp image save hello-function-native \ 
+    --tag <your-repo-prefix>/hello-function:native \ 
+    --git https://github.com/ddobrin/native-spring-cloud-run-with-graalvm.git \
+    --git-revision main \
+    --cluster-builder tiny \ 
+    --env BP_BOOT_NATIVE_IMAGE=1 \
+    --env BP_JVM_VERSION=11 \
+    --env BP_MAVEN_BUILD_ARGUMENTS="-Dmaven.test.skip=true package spring-boot:repackage" \
+    --env BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS="-Dspring.spel.ignore=true -Dspring.xml.ignore=true -Dspring.native.remove-yaml-support=true --enable-all-security-services" \
+    --wait 
+
+* your-repo-prefix - prefix for your Container Registry. Ex. Docker-desktop hello-function:native, GCR gcr.io/pa-ddobrin/hello-function:native 
+* tag - image tag
+* git - repo location 
+* local-path - to build from a local download of the repo, replace "git" with "local-path"
+        --local-path ~/native-spring-cloud-run-with-graalvm
+* git-revision - the code branch in Git
+* cluster-builder - the Paketo builder used to build the image
+* BP_BOOT_NATIVE_IMAGE - set to true builds a Spring Native image
+* BP_JVM_VERSION - Java version to build for, accepts 8, 11
+* wait - if you wish to observe the build taking place
+* BP_MAVEN_BUILD_ARGUMENTS - kpack/TBS works declaratively in K8s, therefore requires instructions for the `repackaging` goal to be triggered; local machine is imperative and `package` in pom.xml is sufficient. 
+* BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS - optimization arguments for the Native image to minimize image size
 ```

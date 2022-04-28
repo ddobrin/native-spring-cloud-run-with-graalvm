@@ -10,7 +10,7 @@ import java.util.function.Function;
 @SpringBootApplication
 public class SpringNativeFunctionApplication {
 
-    @Value("${TARGET:from-function}")
+    @Value("${TARGET:a Spring function}")
     String target;
 
     public static void main(String[] args) {
