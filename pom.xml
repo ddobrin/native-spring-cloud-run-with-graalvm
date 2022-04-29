@@ -14,7 +14,7 @@
     <name>spring-native-function</name>
     <description>A simple example of a Function deployed in Google Cloud Run, available as JVM or Native Image</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
 		<spring-cloud.version>2021.0.1</spring-cloud.version>
         <spring-native.version>0.11.4</spring-native.version>
         <native-buildtools.version>0.9.11</native-buildtools.version>
@@ -190,7 +190,7 @@
                                 <name>${registry}/${project.artifactId}-${native-image-type}:latest</name>
                                 <env>
                                     <BP_BOOT_NATIVE_IMAGE>1</BP_BOOT_NATIVE_IMAGE>
-                                    <BP_JVM_VERSION>11</BP_JVM_VERSION>
+                                    <BP_JVM_VERSION>17</BP_JVM_VERSION>
                                     <BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
                                         <removeSpelSupport>true</removeSpelSupport>
                                         <removeYamlSupport>true</removeYamlSupport>
@@ -252,6 +252,9 @@
                         <artifactId>native-maven-plugin</artifactId>
                         <version>${native-buildtools.version}</version>
                         <extensions>true</extensions>
+                        <!-- <configuration>
+                            <buildArgs>-Ob</buildArgs>
+                        </configuration> -->
                         <executions>
                             <execution>
                                 <id>test-native</id>

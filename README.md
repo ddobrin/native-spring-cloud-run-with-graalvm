@@ -1,6 +1,6 @@
-[Last updated: April 28, 2022]
+[Last updated: April 29, 2022]
 
-Learn how to build JVM and Native Java images and deploy them on the CloudRun serverless compute platform.
+Learn how to build JVM and Native Java images with Spring Native and GraalVM and deploy them on the CloudRun serverless compute platform.
 
 The sample app provides a simple `Hello` web app based on Spring Boot and Spring Cloud Functions, with a focus on building and running native images on a serveless platform, rather than the intricacies of the app itself.
 
@@ -13,12 +13,13 @@ Major improvements - GraalVM 22.1.0:
 `Dive into`:
 1. Build 
     * Build a JVM / Native `Application image` with the Spring Boot plugin and GraalVM
-    * Build a JVM / Native `Docker image` with Java, respectively Java Native Paketo Buildpacks 
+    * Build a JVM / Native `Docker image` using Java/Java Native, Paketo Buildpacks 
+    * Build a JVM / Native `Docker image` using Dockerfiles 
 2. Generate Native Tests
 3. Deploy 
     * Run locally
     * Deploy to Google Cloud Run
-4. [Optional] First look at Quick Build Mode for Developers
+4. First look at Quick Build Mode for Developers
 
 `Tools and versions in use:`
 * Spring Boot 2.6.6
@@ -30,9 +31,7 @@ Major improvements - GraalVM 22.1.0:
 * GraalVM CE
   * OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06)
   * OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06, mixed mode, sharing)
-* Java compatibility level: Java 11
-  * Java 17 is not supported in Paketo Java Native Buildpacks at this time
-  * Building app images with GraalVM and Spring Native has been tested for this codebase
+* Java compatibility level: Java 17
 
 # Installation
 Install GraalVM from:
@@ -263,7 +262,7 @@ $ gcloud run services delete hello-function --region us-central1
 ```
 
 ## Changelog
-April 28, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
+April 29, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
 
 ----------
 

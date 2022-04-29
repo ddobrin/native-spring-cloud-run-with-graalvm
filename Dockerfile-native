@@ -1,0 +1,29 @@
+FROM ghcr.io/graalvm/graalvm-ce:latest as builder
+
+WORKDIR /app
+COPY . /app
+
+RUN gu install native-image
+
+RUN ./mvnw compile jar:jar
+
+RUN native-image \
+  --no-fallback \
+  --no-server \
+  --install-exit-handlers \
+  -H:Name=hello-function \
+  -cp /app/target/*.jar \
+  com.example.hello.SpringNativeFunctionApplication
+
+RUN curl -L -o xz.rpm https://www.rpmfind.net/linux/centos/8-stream/BaseOS/x86_64/os/Packages/xz-5.2.4-3.el8.x86_64.rpm
+RUN rpm -iv xz.rpm
+
+RUN curl -L -o upx-3.96-amd64_linux.tar.xz https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
+RUN tar -xvf upx-3.96-amd64_linux.tar.xz
+RUN upx-3.96-amd64_linux/upx -7 /app/hello-function
+
+FROM scratch
+
+COPY --from=builder /app/hello-function /hello-function
+
+ENTRYPOINT ["/hello-function"]

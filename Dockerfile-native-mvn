@@ -1,0 +1,16 @@
+FROM ghcr.io/graalvm/graalvm-ce:22.1.0 as builder
+
+WORKDIR /app
+COPY . /app
+
+RUN gu install native-image
+
+RUN ./mvnw package -Pnative -DskipTests
+
+COPY /target/hello-function /hello-function
+
+FROM scratch
+
+COPY --from=builder /hello-function /hello-function
+
+ENTRYPOINT ["/hello-function"]

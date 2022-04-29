@@ -1,0 +1,107 @@
+MacBook Pro (15-inch, 2019)
+2.6 GHz 6-Core Intel Core i7
+32 GB 2400 MHz DDR4
+---
+hello-function-native                                                                  dockerfile-mvn-upx                                                 d77e872104ae   2 hours ago     19.5MB
+hello-function-native                                                                  dockerfile-mvn-upx-prod                                            d77e872104ae   2 hours ago     19.5MB
+hello-function-native                                                                  dockerfile-mvn-prod                                                0594da5d433a   3 hours ago     67.5MB
+hello-function-native                                                                  dockerfile-native-image-builder                                    7abbe86957a5   3 hours ago     3.55MB
+gcr.io/dans-project-331502/hello-function-jvm                                          latest                                                             e14ec3c90396   42 years ago    278MB
+gcr.io/dans-project-331502/hello-function-native                                       latest                                                             a70c1d5ddf9b   42 years ago    92.5MB
+---
+
+ddobrin@ddobrin-macbookpro [~/work/dan/native-spring-cloud-run-with-graalvm]docker build -f Dockerfile-native-mvn . -t hello-function-native:dockerfile-mvn 
+[+] Building 494.9s (12/12) FINISHED                                                                                                                                                                                     
+ => [internal] load build definition from Dockerfile-native-mvn                                                                                                                                                     0.0s
+ => => transferring dockerfile: 51B                                                                                                                                                                                 0.0s
+ => [internal] load .dockerignore                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                     0.0s
+ => [internal] load metadata for ghcr.io/graalvm/graalvm-ce:22.1.0                                                                                                                                                  0.4s
+ => [internal] load build context                                                                                                                                                                                   1.6s
+ => => transferring context: 88.63MB                                                                                                                                                                                1.6s
+ => [builder 1/6] FROM ghcr.io/graalvm/graalvm-ce:22.1.0@sha256:7a9562a544249739ecdf24f10eb88636f71240f57faa1d13fabb61ce9c60f3d7                                                                                    0.0s
+ => CACHED [builder 2/6] WORKDIR /app                                                                                                                                                                               0.0s
+ => [builder 3/6] COPY . /app                                                                                                                                                                                       0.5s
+ => [builder 4/6] RUN gu install native-image                                                                                                                                                                       5.2s
+ => [builder 5/6] RUN ./mvnw package -Pnative -DskipTests                                                                                                                                                         485.1s 
+ => [builder 6/6] COPY /target/hello-function /hello-function                                                                                                                                                       0.2s 
+ => [stage-1 1/1] COPY --from=builder /hello-function /hello-function                                                                                                                                               0.2s 
+ => exporting to image                                                                                                                                                                                              0.4s 
+ => => exporting layers                                                                                                                                                                                             0.4s 
+ => => writing image sha256:0594da5d433a2ee8d3336120476e5b6da684d6cf76927f76cfbb1005b95b4625                                                                                                                        0.0s 
+ => => naming to docker.io/library/hello-function-native:dockerfile-mvn                       
+
+ ddobrin@ddobrin-macbookpro [~/work/dan/native-spring-cloud-run-with-graalvm]docker build -f Dockerfile-native-mvn-upx . -t hello-function-native:dockerfile-mvn-upx 
+[+] Building 34.1s (17/17) FINISHED                                                                                                                                                                                      
+ => [internal] load build definition from Dockerfile-native-mvn-upx                                                                                                                                                 0.0s
+ => => transferring dockerfile: 704B                                                                                                                                                                                0.0s
+ => [internal] load .dockerignore                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                     0.0s
+ => [internal] load metadata for ghcr.io/graalvm/graalvm-ce:latest                                                                                                                                                  0.9s
+ => [internal] load build context                                                                                                                                                                                   0.0s
+ => => transferring context: 30.77kB                                                                                                                                                                                0.0s
+ => [builder  1/11] FROM ghcr.io/graalvm/graalvm-ce:latest@sha256:7a9562a544249739ecdf24f10eb88636f71240f57faa1d13fabb61ce9c60f3d7                                                                                  0.0s
+ => CACHED [builder  2/11] WORKDIR /app                                                                                                                                                                             0.0s
+ => CACHED [builder  3/11] COPY . /app                                                                                                                                                                              0.0s
+ => CACHED [builder  4/11] RUN gu install native-image                                                                                                                                                              0.0s
+ => CACHED [builder  5/11] RUN ./mvnw package -Pnative -DskipTests                                                                                                                                                  0.0s
+ => CACHED [builder  6/11] COPY /target/hello-function /hello-function                                                                                                                                              0.0s
+ => [builder  7/11] RUN curl -L -o xz.rpm https://www.rpmfind.net/linux/centos/8-stream/BaseOS/x86_64/os/Packages/xz-5.2.4-3.el8.x86_64.rpm                                                                         1.5s
+ => [builder  8/11] RUN rpm -iv xz.rpm                                                                                                                                                                              0.5s
+ => [builder  9/11] RUN curl -L -o upx-3.96-amd64_linux.tar.xz https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz                                                                       0.9s 
+ => [builder 10/11] RUN tar -xvf upx-3.96-amd64_linux.tar.xz                                                                                                                                                        0.2s 
+ => [builder 11/11] RUN upx-3.96-amd64_linux/upx -7 /hello-function                                                                                                                                                29.4s 
+ => [stage-1 1/1] COPY --from=builder /hello-function /hello-function                                                                                                                                               0.1s 
+ => exporting to image                                                                                                                                                                                              0.1s 
+ => => exporting layers                                                                                                                                                                                             0.1s 
+ => => writing image sha256:d77e872104aefe65ae29a16a9bcec44fa89cf7456377309d60336a35bb0f1ef9                                                                                                                        0.0s 
+ => => naming to docker.io/library/hello-function-native:dockerfile-mvn-upx             
+
+
+ ddobrin@ddobrin-macbookpro [~/work/dan/native-spring-cloud-run-with-graalvm]docker build -f Dockerfile-native-mvn . -t hello-function-native:dockerfile-mvn-dev 
+[+] Building 499.6s (12/12) FINISHED                                                                                                                                                                                     
+ => [internal] load build definition from Dockerfile-native-mvn                                                                                                                                                     0.0s
+ => => transferring dockerfile: 348B                                                                                                                                                                                0.0s
+ => [internal] load .dockerignore                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                     0.0s
+ => [internal] load metadata for ghcr.io/graalvm/graalvm-ce:22.1.0                                                                                                                                                  0.4s
+ => [builder 1/6] FROM ghcr.io/graalvm/graalvm-ce:22.1.0@sha256:7a9562a544249739ecdf24f10eb88636f71240f57faa1d13fabb61ce9c60f3d7                                                                                    0.0s
+ => [internal] load build context                                                                                                                                                                                   0.0s
+ => => transferring context: 48.73kB                                                                                                                                                                                0.0s
+ => CACHED [builder 2/6] WORKDIR /app                                                                                                                                                                               0.0s
+ => [builder 3/6] COPY . /app                                                                                                                                                                                       0.3s
+ => [builder 4/6] RUN gu install native-image                                                                                                                                                                       2.4s
+ => [builder 5/6] RUN ./mvnw package -Pnative -DskipTests                                                                                                                                                         495.7s 
+ => [builder 6/6] COPY /target/hello-function /hello-function                                                                                                                                                       0.2s 
+ => CACHED [stage-1 1/1] COPY --from=builder /hello-function /hello-function                                                                                                                                        0.0s 
+ => exporting to image                                                                                                                                                                                              0.0s 
+ => => exporting layers                                                                                                                                                                                             0.0s 
+ => => writing image sha256:0594da5d433a2ee8d3336120476e5b6da684d6cf76927f76cfbb1005b95b4625                                                                                                                        0.0s 
+ => => naming to docker.io/library/hello-function-native:dockerfile-mvn-dev         
+
+
+ddobrin@ddobrin-macbookpro [~/work/dan/native-spring-cloud-run-with-graalvm]docker build -f Dockerfile-native-mvn-upx . -t hello-function-native:dockerfile-mvn-upx-prod 
+[+] Building 35.2s (17/17) FINISHED                                                                                                                                                                                      
+ => [internal] load build definition from Dockerfile-native-mvn-upx                                                                                                                                                 0.0s
+ => => transferring dockerfile: 704B                                                                                                                                                                                0.0s
+ => [internal] load .dockerignore                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                     0.0s
+ => [internal] load metadata for ghcr.io/graalvm/graalvm-ce:latest                                                                                                                                                  0.4s
+ => [builder  1/11] FROM ghcr.io/graalvm/graalvm-ce:latest@sha256:7a9562a544249739ecdf24f10eb88636f71240f57faa1d13fabb61ce9c60f3d7                                                                                  0.0s
+ => [internal] load build context                                                                                                                                                                                   0.0s
+ => => transferring context: 22.00kB                                                                                                                                                                                0.0s
+ => CACHED [builder  2/11] WORKDIR /app                                                                                                                                                                             0.0s
+ => CACHED [builder  3/11] COPY . /app                                                                                                                                                                              0.0s
+ => CACHED [builder  4/11] RUN gu install native-image                                                                                                                                                              0.0s
+ => CACHED [builder  5/11] RUN ./mvnw package -Pnative -DskipTests                                                                                                                                                  0.0s
+ => CACHED [builder  6/11] COPY /target/hello-function /hello-function                                                                                                                                              0.0s
+ => [builder  7/11] RUN curl -L -o xz.rpm https://www.rpmfind.net/linux/centos/8-stream/BaseOS/x86_64/os/Packages/xz-5.2.4-3.el8.x86_64.rpm                                                                         1.0s
+ => [builder  8/11] RUN rpm -iv xz.rpm                                                                                                                                                                              0.4s
+ => [builder  9/11] RUN curl -L -o upx-3.96-amd64_linux.tar.xz https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz                                                                       0.7s 
+ => [builder 10/11] RUN tar -xvf upx-3.96-amd64_linux.tar.xz                                                                                                                                                        0.4s 
+ => [builder 11/11] RUN upx-3.96-amd64_linux/upx -7 /hello-function                                                                                                                                                31.8s 
+ => CACHED [stage-1 1/1] COPY --from=builder /hello-function /hello-function                                                                                                                                        0.0s 
+ => exporting to image                                                                                                                                                                                              0.0s 
+ => => exporting layers                                                                                                                                                                                             0.0s 
+ => => writing image sha256:d77e872104aefe65ae29a16a9bcec44fa89cf7456377309d60336a35bb0f1ef9                                                                                                                        0.0s 
+ => => naming to docker.io/library/hello-function-native:dockerfile-mvn-upx-prod                        
