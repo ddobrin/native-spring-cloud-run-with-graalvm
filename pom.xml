@@ -189,12 +189,13 @@
                                 <builder>paketobuildpacks/builder:tiny</builder>
                                 <name>${registry}/${project.artifactId}-${native-image-type}:latest</name>
                                 <env>
-                                    <BP_BOOT_NATIVE_IMAGE>1</BP_BOOT_NATIVE_IMAGE>
+                                    <BP_NATIVE_IMAGE>1</BP_NATIVE_IMAGE>
                                     <BP_JVM_VERSION>17</BP_JVM_VERSION>
-                                    <BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                                    <BP_BINARY_COMPRESSION_METHOD>none</BP_BINARY_COMPRESSION_METHOD>
+                                    <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
                                         <removeSpelSupport>true</removeSpelSupport>
                                         <removeYamlSupport>true</removeYamlSupport>
-                                    </BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                                    </BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
                                 </env>
                             </image>
                         </configuration>
