@@ -255,6 +255,7 @@
                         <artifactId>native-maven-plugin</artifactId>
                         <version>${native-buildtools.version}</version>
                         <extensions>true</extensions>
+                        <!-- Quick Build Developer Mode -->
                         <!-- <configuration>
                             <buildArgs>-Ob</buildArgs>
                         </configuration> -->

@@ -19,10 +19,11 @@ Intel and Apple Silicon builds are supported for the different build methods at 
 3. Deploy
     * Deploy to Google Cloud Run
 4. Develop
-   * First look at Quick Build Mode for Developers !
-5. Analyze
+   * How to use the new Quick Build Mode for Developers!
+5. Analyze 
+   * App & Container image sizes  
    * Start-up latency
-   * App & Container image sizes 
+   * RSS memory consumption
 
 ### `Java and library versions in use`
 * Spring Boot 2.6.6
@@ -345,21 +346,236 @@ gcloud run services delete hello-function-native --region us-central1
 
 ```
 
-## Changelog
-April 30, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
-May 2, 2022: Deploy to Cloud Run
-
-----------
-
-## [Optional - How to use Quick Build Mode for Development
+# How to use Quick Build Mode for Development
 
 Quick Build mode significantly improves build latency by running the compiler in economy mode, with fewer optimizations, resulting in much faster builds.
 
-This is a Development feature, not recommended for Production.
-In Production, use the default compilation mode, which provides the best runtime performance and memory efficiency !
+This is a Development feature, not recommended for Production !!!
+In Production, use the default compilation mode, which provides the best runtime performance and memory efficiency!
 
 To enable quick build mode, add `-Ob (capital “O”, lower case “b”)` when building with the native-image utility.
+Ex.:
+```xml
+<profile>
+    <id>native</id>
+    ...
+    <dependencies>
+        <dependency>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>junit-platform-native</artifactId>
+            <version>${native-buildtools.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>${native-buildtools.version}</version>
+                <extensions>true</extensions>
+                <!--Enable Quick Build mode -->
+                <configuration>
+                    <buildArgs>-Ob</buildArgs>
+                </configuration>
+                <!--end -->
+                ...
+```
 
+When building an app, the GraalVM compiler will perform 7 steps,  from initialization to building an app image.
+The output provides significantly more information than in previous versions.
 
+Step `[6/7] Compiling methods ...` is the step when optimizations will be executed.
 
+Excerpt from building the `optimized, production app`:
+```text
+[1/7] Initializing...                                                                                    (5.0s @ 0.30GB)
+[2/7] Performing analysis...  [***********]                                                             (42.6s @ 3.20GB)
+  14,540 (91.85%) of 15,830 classes reachable
+  22,971 (66.36%) of 34,614 fields reachable
+  71,637 (64.60%) of 110,894 methods reachable
+     756 classes,   283 fields, and 3,752 methods registered for reflection
+      62 classes,    69 fields, and    54 methods registered for JNI access
+[3/7] Building universe...                                                                               (3.4s @ 4.26GB)
+[4/7] Parsing methods...      [**]                                                                       (2.8s @ 5.68GB)
+[5/7] Inlining methods...     [*****]                                                                    (7.2s @ 3.89GB)
+[6/7] Compiling methods...    [******]                                                                  (34.3s @ 2.80GB)
+[7/7] Creating image...                                                                                  (6.2s @ 4.69GB)
+  30.91MB (45.26%) for code area:   46,649 compilation units
+  31.98MB (46.83%) for image heap:  10,114 classes and 350,168 objects
+   5.41MB ( 7.91%) for other data
+  68.30MB in total
+------------------------------------------------------------------------------------------------------------------------
+Top 10 packages in code area:                               Top 10 object types in image heap:
+   1.67MB sun.security.ssl                                     6.58MB byte[] for code metadata
+   1.06MB java.util                                            5.87MB byte[] for general heap data
+ 934.39KB com.oracle.svm.core.reflect                          3.55MB java.lang.Class
+ 733.99KB com.sun.crypto.provider                              3.19MB java.lang.String
+ 625.37KB org.apache.tomcat.util.net                           2.84MB byte[] for java.lang.String
+ 551.80KB org.apache.catalina.core                             1.22MB com.oracle.svm.core.hub.DynamicHubCompanion
+ 489.36KB org.apache.coyote.http2                              1.10MB java.lang.reflect.Method
+ 483.47KB java.lang                                          670.18KB byte[] for reflection metadata
+ 481.73KB java.util.concurrent                               660.15KB java.lang.String[]
+ 472.85KB sun.security.x509                                  575.06KB java.util.HashMap$Node
+      ... 584 additional packages                                 ... 3002 additional object types
+                                           (use GraalVM Dashboard to see all)
+------------------------------------------------------------------------------------------------------------------------
+                       12.4s (11.4% of total time) in 36 GCs | Peak RSS: 7.57GB | CPU load: 4.28
+------------------------------------------------------------------------------------------------------------------------
+```
+
+When building the `developer app`, less optimizations will be perfoirmed, thus speeding up the build. The change is more noticable the larger the number of classes is.
+
+Excerpt from building the `developer, non-prod app` - notice the `warning` at the top of this snippet:
+```text
+You enabled -Ob for this image build. This will configure some optimizations to reduce image build time.
+This feature should only be used during development and never for deployment.
+...
+[1/7] Initializing...                                                                                    (7.9s @ 0.27GB)
+[2/7] Performing analysis...  [***********]                                                             (53.5s @ 3.90GB)
+  14,540 (91.85%) of 15,830 classes reachable
+  22,971 (66.36%) of 34,615 fields reachable
+  71,637 (64.60%) of 110,891 methods reachable
+     756 classes,   283 fields, and 3,752 methods registered for reflection
+      62 classes,    69 fields, and    54 methods registered for JNI access
+[3/7] Building universe...                                                                               (3.8s @ 4.97GB)
+[4/7] Parsing methods...      [***]                                                                     (10.9s @ 2.10GB)
+[5/7] Inlining methods...     [*****]                                                                    (9.5s @ 2.17GB)
+[6/7] Compiling methods...    [[6/7] Compiling methods...    [*****]                                                                   (28.7s @ 3.02GB)
+[7/7] Creating image...                                                                                  (5.7s @ 2.05GB)
+  31.57MB (45.41%) for code area:   46,656 compilation units
+  32.56MB (46.83%) for image heap:  10,114 classes and 349,933 objects
+   5.40MB ( 7.76%) for other data
+  69.53MB in total
+------------------------------------------------------------------------------------------------------------------------
+Top 10 packages in code area:                               Top 10 object types in image heap:
+   1.74MB sun.security.ssl                                     7.15MB byte[] for code metadata
+   1.07MB java.util                                            5.87MB byte[] for general heap data
+ 952.42KB com.oracle.svm.core.reflect                          3.44MB java.lang.Class
+ 785.22KB com.sun.crypto.provider                              3.19MB java.lang.String
+ 614.00KB org.apache.tomcat.util.net                           2.84MB byte[] for java.lang.String
+ 576.03KB org.apache.catalina.core                             1.22MB com.oracle.svm.core.hub.DynamicHubCompanion
+ 497.23KB org.apache.coyote.http2                              1.10MB java.lang.reflect.Method
+ 481.12KB sun.security.x509                                  670.15KB byte[] for reflection metadata
+ 480.67KB java.lang                                          660.44KB java.lang.String[]
+ 470.72KB java.util.concurrent                               575.06KB java.util.HashMap$Node
+      ... 584 additional packages                                 ... 3003 additional object types
+                                           (use GraalVM Dashboard to see all)
+------------------------------------------------------------------------------------------------------------------------
+                       20.3s (16.0% of total time) in 34 GCs | Peak RSS: 6.96GB | CPU load: 4.03
+------------------------------------------------------------------------------------------------------------------------
+```
+
+Please note the build latency reduction [Prod/Dev]:
+```
+[6/7] Compiling methods...    [******]                                  (34.3s @ 2.80GB)
+[6/7] Compiling methods...    [[6/7] Compiling methods...    [*****]    (28.7s @ 3.02GB)
+```
+... as well as lower RSS memory usage and lower CPU load
+```
+12.4s (11.4% of total time) in 36 GCs | Peak RSS: 7.57GB | CPU load: 4.28
+20.3s (16.0% of total time) in 34 GCs | Peak RSS: 6.96GB | CPU load: 4.03
+```
+
+# Analyze
+
+## App and Docker container image sizes
+
+What can we learn from comparing JVM and native images? This chapter does not intend to go into the details of JVM vs Native, that area is left for another workshop.
+In here the intention is to compare the numbers for the latest versions of Java LTS, GraalVM and Spring/
+
+Native images are larger, however they are self-contained and do not require a JVM to run:
+```text
+-rw-r--r--   1 ddobrin  primarygroup  20408565  1 May 16:50 hello-function-1.0.0-exec.jar
+-rwxr-xr-x   1 ddobrin  primarygroup  66225000  1 May 16:52 hello-function
+```
+
+Docker images for JVM based apps are quite large, while native images are significantly smaller, as the Docker container does not require a JRE to run the Java app.
+The images shown below have been build with the [Paketo Java Buildpack](https://github.com/paketo-buildpacks/java) and the [Paketo Native Java Buildpack](https://github.com/paketo-buildpacks/native-image) respectively, withtou the need to build a Dockerfile.
+```text
+hello-function-native                                                                  r17-no-compression                                                 0bedca53cafb   42 years ago    92.5MB
+hello-function-native                                                                  r17-upx                                                            ea422a1b1e07   42 years ago    41.9MB
+hello-function-jvm                                                                     r17                                                                021a6af1060f   42 years ago    278MB
+```
+
+By default, Docker images for Native Java apps are not compressed, however you can compress them using `UPX` or `GZEXE`.
+To compress the image, you must specify the compression method in the Maven profile:
+```xml
+<profile>
+    <id>native-image</id>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>${repackage.classifier}</classifier>
+                    <image>
+                        <builder>paketobuildpacks/builder:tiny</builder>
+                        <name>${project.artifactId}-${native-image-type}:${build.version}</name>
+                        <env>
+                            <BP_NATIVE_IMAGE>1</BP_NATIVE_IMAGE>
+                            <BP_JVM_VERSION>17</BP_JVM_VERSION>
+                            <!-- <none> is default -->
+                            <!-- upx or gzexe are supported options -->
+                            <BP_BINARY_COMPRESSION_METHOD>upx</BP_BINARY_COMPRESSION_METHOD>
+                            <!-- end compression -->
+                            <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                                <removeSpelSupport>true</removeSpelSupport>
+                                <removeYamlSupport>true</removeYamlSupport>
+                            </BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                        </env>
+                    </image>
+                </configuration>
+...
+```
+
+## Start-up latency
+JVM applications start-up latency is significantly improved in native images.
+
+JVM based app:
+```shell
+java -jar target/hello-function-1.0.0-exec.jar
+...
+2022-05-02 14:54:30.752  INFO 44215 --- [           main] c.e.h.SpringNativeFunctionApplication    : Started SpringNativeFunctionApplication in 1.504 seconds (JVM running for 1.848)
+...
+```
+
+Native java app:
+```shell
+target/hello-function
+...
+2022-05-02 14:55:47.170  INFO 44404 --- [           main] c.e.h.SpringNativeFunctionApplication    : Started SpringNativeFunctionApplication in 0.065 seconds (JVM running for 0.067)
+...
+```
+
+## RSS memory consumption
+RSS memory consumption is significantly lower in Native Java apps
+
+JVM based app:
+```shell
+# memory usage in MB
+ps -o pid,rss,command | grep --color hello-function | awk '{$2=int($2/1024)"M";}{ print;}'
+
+# before running an HTTP request
+44650 221M java -jar target/hello-function-1.0.0-exec.jar
+# after running 5 HTTP requests
+44650 227M java -jar target/hello-function-1.0.0-exec.jar
+```
+
+Native Java app:
+```shell
+# memory usage in MB
+ps -o pid,rss,command | grep --color hello-function | awk '{$2=int($2/1024)"M";}{ print;}'
+
+# before running an HTTP request
+45299 49M target/hello-function
+
+# after running 5 HTTP requests
+45299 53M target/hello-function
+```
+
+## Changelog
+* April 30, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
+* May 2, 2022: Deploy to Cloud Run, analysis
 
