@@ -1,40 +1,44 @@
-[Last updated: April 30, 2022]
+[Last updated: May 2, 2022]
 
-Learn how to build JVM and Native Java images with Spring Native and GraalVM, then deploy them on the CloudRun serverless compute platform.
+**Learn how to build JVM and Native Java images with Spring Native and GraalVM, then deploy them on the Google CloudRun serverless compute platform.**
+
 
 The sample app provides a simple `Hello` web app based on Spring Boot and Spring Cloud Functions. 
-The focus is on building and deploying native images to a serverless platform. The update to this repo follows the latest release of GraalVM 22.1.0 with Java 17 support, which brings a series of major improvements.
+The focus is on building and deploying native images to a serverless platform. The update to this repo follows the latest release of GraalVM 22.1.0 with Java 17 support, which brings a series of significant improvements.
 
-Intel and Apple Silicon builds are supported for the different build methods.
+Intel and Apple Silicon builds are supported for the different build methods at this time.
 
 [Full details - GraalVM 22.1: Developer experience improvements, Apple Silicon builds, and more](https://medium.com/graalvm/graalvm-22-1-developer-experience-improvements-apple-silicon-builds-and-more-b7ac9a0f6066)
 
-`Dive into`:
+### `Dive into`
 1. Build 
     * JVM & Native `Application image` with the Spring Boot Maven plugin and GraalVM
-    * JVM & Native `Docker image` using Java & Java Native Paketo Buildpacks 
-    * JVM & Native `Docker image` using Dockerfiles 
+    * JVM & Native `Docker image` using Java/Native Java Paketo Buildpacks and Compression
 2. Generate 
    * Native Tests
 3. Deploy
     * Deploy to Google Cloud Run
 4. Develop
-   * First look at Quick Build Mode for Developers
-5. Compare
+   * First look at Quick Build Mode for Developers !
+5. Analyze
    * Start-up latency
    * App & Container image sizes 
 
-`Tools and versions in use:`
+### `Java and library versions in use`
 * Spring Boot 2.6.6
 * Spring Native 0.11.4 
 * Native Buildtools 0.9.11
 * Spring Cloud 2021.1.0
 * OpenJDK
-  * openjdk version "17.0.3" 2022-04-19
+  * Openjdk version "17.0.3" 2022-04-19
 * GraalVM CE
   * OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06)
   * OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06, mixed mode, sharing)
 * Java compatibility level: Java 17
+
+### `Known Issues`
+* Java Native Buildpacks are failing on M1 Macs as of today; Native Java App images can be built cleanly
+* UPX compression for M1 Macs is a known issue with a pending patch
 
 # Installation
 Install GraalVM from:
@@ -51,6 +55,7 @@ gu install native-image
 
 ## Build application images
 Building an executable application with the GraalVM compiler requires the installation of the GraalVM and the native-image builder utility and leverages the following `Maven profile`:
+* `jvm` (or noprofile specified, as default)
 * `native`
 
 ### Build code as a JVM app using the Spring Boot Maven plugin
@@ -82,7 +87,7 @@ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Native app"
 Building the code with the Spring Boot Maven wrapper uses the following `Maven profiles`:
 * `native-image` - build a Native image leveraging GraalVM
 * `jvm-image` - build a JVM-based image leveraging OpenJDK
-* 
+
 ### Build code as a JVM Docker image using the Spring Boot Maven plugin and Java Paketo Buildpacks
 ```bash 
 # build image with default configuration
@@ -92,7 +97,7 @@ Building the code with the Spring Boot Maven wrapper uses the following `Maven p
 ./mvnw clean spring-boot:build-image -Pjvm-image 
 
 # start Docker image
-docker run -p 8080:8080 hello-function-jvm:latest
+docker run -p 8080:8080 hello-function-jvm:r17
 
 # test Docker image locally
 curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a JVM app running in a container"
@@ -105,97 +110,10 @@ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a JVM app runn
 ./mvnw clean spring-boot:build-image -Pnative-image -DskipTests
 
 # start Docker image
-docker run -p 8080:8080 hello-function-native:latest
+docker run -p 8080:8080 hello-function-native:r17
 
 # test Docker image locally
 curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Native app running in a container"
-```
-
-### Build code as a JVM Docker image using a Dockerfile
-Use the `Dockerfile` provided in the repo.
-```bash
-# build image with a Dockerfile
-./mvnw clean package -Pjvm -DskipTests 
-docker build -f Dockerfile . -t hello-function:dockerfile
-
-# start Docker image
-docker run -p 8080:8080 hello-function:dockerfile
-
-# test Docker image locally
-curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a JVM app running in a container"
-```
-
-### Build code as a Native Java Docker image using a Dockerfile
-Use the `Dockerfile-native-mvn` file provided in the repo.
-```text
-FROM ghcr.io/graalvm/graalvm-ce:22.1.0 as builder
-
-WORKDIR /app
-COPY . /app
-
-RUN gu install native-image
-
-RUN ./mvnw package -Pnative -DskipTests
-
-COPY /target/hello-function /hello-function
-
-FROM scratch
-
-COPY --from=builder /hello-function /hello-function
-
-ENTRYPOINT ["/hello-function"]
-```
-Build the Native Java Docker image
-```bash
-# build image with a Dockerfile
-docker build -f Dockerfile-native-mvn . -t hello-function-native:dockerfile-mvn 
-
-# start Docker image
-docker run -p 8080:8080 hello-function-native:dockerfile-mvn 
-
-# test Docker image locally
-curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Native app running in a container"
-```
-
-### Build code as a Native Java Docker image using a Dockerfile and compressing the image with UPX 
-Use the `Dockerfile-native-mvn-upx` file provided in the repo.
-```text
-FROM ghcr.io/graalvm/graalvm-ce:latest as builder
-
-WORKDIR /app
-COPY . /app
-
-RUN gu install native-image
-
-RUN ./mvnw package -Pnative -DskipTests
-
-COPY /target/hello-function /hello-function
-
-# Note the usage of UPX to compress the image
-RUN curl -L -o xz.rpm https://www.rpmfind.net/linux/centos/8-stream/BaseOS/x86_64/os/Packages/xz-5.2.4-3.el8.x86_64.rpm
-RUN rpm -iv xz.rpm
-
-RUN curl -L -o upx-3.96-amd64_linux.tar.xz https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
-RUN tar -xvf upx-3.96-amd64_linux.tar.xz
-RUN upx-3.96-amd64_linux/upx -7 /hello-function
-# 
-
-FROM scratch
-
-COPY --from=builder /hello-function /hello-function
-
-ENTRYPOINT ["/hello-function"]
-```
-Build the Native Java Docker image
-```bash
-# build image with a Dockerfile
-docker build -f Dockerfile-native-mvn-upx . -t hello-function-native:dockerfile-mvn-upx 
-
-# start Docker image
-docker run -p 8080:8080 hello-function-native:dockerfile-mvn-upx 
-
-# test Docker image locally
-curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a Native app running in a container and compressed with UPX"
 ```
 
 # Generate Native Tests
@@ -219,6 +137,9 @@ $ ./target/native-tests
 
 Observe the significant latency reduction in test execution:
 ```text
+JUnit Platform on Native Image - report
+----------------------------------------
+...
 2022-04-30 10:32:05.474  INFO 32772 --- [           main] e.h.SpringNativeFunctionApplicationTests : Started SpringNativeFunctionApplicationTests in 0.442 seconds (JVM running for 0.786)
 [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.616 s - in com.example.hello.SpringNativeFunctionApplicationTests
 [INFO] 
@@ -261,15 +182,21 @@ gcloud auth list
 
 # check if the project is set
 gcloud projects list
-PROJECT_ID           NAME           PROJECT_NUMBER
-dans-project-xyz  Dan's Project     123456789
+PROJECT_ID                    NAME              PROJECT_NUMBER
+dan-workshop-project-332213   Dans Project      123456789
 
-# set it if not already set
-gcloud config set project dans-project-xyz
+# set project ID if not already set
+gcloud config set project <project id>
+# ex:
+gcloud config set project dan-workshop-project-332213
+
+# tag the images and push them to the Container Registry 
+docker tag hello-function-jvm:r17 gcr.io/dan-workshop-project-332213/hello-function-jvm:r17
+docker tag hello-function-native:r17 gcr.io/dan-workshop-project-332213/hello-function-native:r17
 
 # push the image(s) to the Container Registry
-docker push gcr.io/dans-project-331502/hello-function-jvm:latest
-docker push gcr.io/dans-project-331502/hello-function-native:latest
+docker push gcr.io/dan-workshop-project-332213/hello-function-jvm:r17
+docker push gcr.io/dan-workshop-project-332213/hello-function-native:r17
 ```
 
 As a developer, the service can be deployed, for testing, unauthorized, while providing full access to the service.
@@ -281,39 +208,57 @@ For development, the easiest way to test a service that requires authentication 
 This is NOT recommended outside of testing, and proper tokens should be generated during deployment.
 
 #### Deploy with unauthenticated users:
-```shell
+```bash
 # deploy the container to CloudRun
 # Note that we are specifying:
 #    app name - hello-function
 #    region - us-central1
 #    memory allocated for the process - 1Gi
 #    simple apps allow all users, unauthenticated, best practice is to set service accounts up
-gcloud run deploy hello-function \
-     --image=gcr.io/dans-project-331502/hello-function-jvm \ 
-     --region us-central1 \
-     --memory 1Gi \
-     --allow-unauthenticated
-..
-Deploying container to Cloud Run service [hello-function] in project [dans-project-331502] region [us-central1]
+
+# deploy a JVM image
+gcloud run deploy hello-function-jvm \
+  --image=gcr.io/dan-workshop-project-332213/hello-function-jvm:r17 \
+  --region us-central1 \
+  --memory 1Gi --allow-unauthenticated
+
+...
+Deploying container to Cloud Run service [hello-function-jvm] in project [dan-workshop-project-332213] region [us-central1]
 ✓ Deploying... Done.                                                                                                                                       
   ✓ Creating Revision...                                                                                                                                   
   ✓ Routing traffic...                                                                                                                                     
   ✓ Setting IAM Policy...                                                                                                                                  
 Done.                                                                                                                                                      
-Service [hello-function] revision [hello-function-00002-ceb] has been deployed and is serving 100 percent of traffic.
+Service [hello-function-jvm] revision [hello-function-jvm-00001-soj] has been deployed and is serving 100 percent of traffic.
+
+# deploy a Native Java image
+gcloud run deploy hello-function-native \
+  --image=gcr.io/dan-workshop-project-332213/hello-function-native:r17 \
+  --region us-central1 \
+  --memory 1Gi --allow-unauthenticated  
+
+...
+Service [hello-function-native] revision [hello-function-native-00001-xah] has been deployed and is serving 100 percent of traffic.
 ...
 
 # check that the project has been successfully deployed 
 # retrieve the URL where the app can be accessed and send a request
-$ gcloud run services list
-   SERVICE         REGION       URL                                             LAST DEPLOYED BY      LAST DEPLOYED AT
-✔  hello-function  us-central1  https://hello-function-v6qqi65qxq-uc.a.run.app  abc@gmail.com  2021-11-13T20:32:37.995100Z
+gcloud run services list
+   SERVICE                   REGION       URL                                                       LAST DEPLOYED AT
+✔  hello-function-jvm        us-central1  https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app        2022-05-02T15:54:59.071861Z
+✔  hello-function-native     us-central1  https://hello-function-native-ieuwkt6jkq-uc.a.run.app     2022-05-02T15:55:39.381280Z
 
-$ curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-v6qqi65qxq-uc.a.run.app -d "from a Function"
-Hello: from a Function, Source: from-function
+# Test the JVM service
+curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app -d "from a JVM Image"
+Hello: from a JVM Image, Source: a Spring function !
+
+# Test the Native Java service
+curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-native-ieuwkt6jkq-uc.a.run.app -d "from a Native Image"
+Hello: from a Native Image, Source: a Spring function !
 
 # delete the service 
-$ gcloud run services delete hello-function --region us-central1
+gcloud run services delete hello-function-jvm --region us-central1
+gcloud run services delete hello-function-native --region us-central1
 ```
 
 #### Deploy with authenticated users:
@@ -324,39 +269,53 @@ $ gcloud run services delete hello-function --region us-central1
 #    region - us-central1
 #    memory allocated for the process - 1Gi
 #    simple apps allow all users, unauthenticated, best practice is to set service accounts up
-$ gcloud run deploy hello-function \
-     --image=gcr.io/dans-project-331502/hello-function-jvm \ 
-     --region us-central1 \
-     --memory 1Gi 
-     
+
+# deploy JVM image
+gcloud run deploy hello-function-jvm \
+  --image=gcr.io/dan-workshop-project-332213/hello-function-jvm:r17 \
+  --region us-central1 \
+  --memory 1Gi
+
 # do not allow unathenticated users at the prompt
-$ Allow unauthenticated invocations to [hello-function] (y/N)?  N
-     
+Allow unauthenticated invocations to [hello-function] (y/N)?  N
+
+Deploying container to Cloud Run service [hello-function-jvm] in project [dan-workshop-project-332213] region [us-central1]
 ...
-Deploying container to Cloud Run service [hello-function] in project [dans-project-331502] region [us-central1]
-✓ Deploying new service... Done.                                                                                                                           
-  ✓ Creating Revision... Deploying Revision.                                                                                                               
-  ✓ Routing traffic...                                                                                                                                     
-Done.                                                                                                                                                      
-Service [hello-function] revision [hello-function-00001-duz] has been deployed and is serving 100 percent of traffic.
-Service URL: https://hello-function-v6qqi65qxq-uc.a.run.app
+Service [hello-function-jvm] revision [hello-function-jvm-00001-vel] has been deployed and is serving 100 percent of traffic.
+Service URL: https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app
+
+# deploy Native Java image
+gcloud run deploy hello-function-native \
+  --image=gcr.io/dan-workshop-project-332213/hello-function-jvm:r17 \
+  --region us-central1 \
+  --memory 1Gi  
+
+# do not allow unathenticated users at the prompt
+Allow unauthenticated invocations to [hello-function] (y/N)?  N
+
+Deploying container to Cloud Run service [hello-function-native] in project [dan-workshop-project-332213] region [us-central1]
 ...
+Service [hello-function-native] revision [hello-function-native-00001-fad] has been deployed and is serving 100 percent of traffic.
+Service URL: https://hello-function-native-ieuwkt6jkq-uc.a.run.app
+
 
 # retrieve the URL where the app can be accessed and send a request
 gcloud run services list
-   SERVICE         REGION       URL                                             LAST DEPLOYED BY      LAST DEPLOYED AT
-✔  hello-function  us-central1  https://hello-function-v6qqi65qxq-uc.a.run.app  abc@gmail.com  2021-11-14T13:37:19.848539Z
+   SERVICE               REGION       URL                                                     LAST DEPLOYED AT
+✔  hello-function-jvm    us-central1  https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app      2022-05-02T16:08:19.929918Z
+✔  hello-function-native us-central1  https://hello-function-native-ieuwkt6jkq-uc.a.run.app   2022-05-02T16:10:24.242963Z
 
 # grant the Cloud Run Invoker role to the developer
+# substitute the developer email
 $ gcloud run services add-iam-policy-binding hello-function \
-    --member='user:abc@gmail.com' \
+    --member='user:<email>' \
     --role='roles/run.invoker'   \
     --region us-central1            
 
 Updated IAM policy for service [hello-function].
 bindings:
 - members:
-  - user:abc@gmail.com
+  - user:<email>
   role: roles/run.invoker
 etag: BwXQv-XczNA=
 version: 1
@@ -366,22 +325,29 @@ version: 1
 # command: gcloud auth print-identity-token 
 
 # for convenience, you can create an alias
-$ alias gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
+alias gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
 
 # you can use the new alias to curl the service
-$ gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-v6qqi65qxq-uc.a.run.app -d "from an authenticated Function"
-Hello: from an authenticated Function, Source: from-function
+# invoke the JVM image service
+gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app -d "from a JVM Image"
+Hello: from a JVM Image, Source: a Spring function !
+
+# invoke the Native image service
+gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-native-ieuwkt6jkq-uc.a.run.app -d "from a Native Image"
+Hello: from a Native Image, Source: a Spring function !
 ```
 
 #### Clean-up 
 ```shell
 # delete the service 
-$ gcloud run services delete hello-function --region us-central1
+gcloud run services delete hello-function-jvm --region us-central1
+gcloud run services delete hello-function-native --region us-central1
 
 ```
 
 ## Changelog
 April 30, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
+May 2, 2022: Deploy to Cloud Run
 
 ----------
 
@@ -397,63 +363,3 @@ To enable quick build mode, add `-Ob (capital “O”, lower case “b”)` when
 
 
 
-## [Optional - CI/CD integration - Build a JVM / Native Docker image with KPACK OSS
-
-To build an image with Java or Java Native Paketo Buildpacks with kpack, you can use the commands listed below.
-
-To start, install the tools as follows:
-* `kpack CLI` - https://github.com/vmware-tanzu/kpack-cli 
-  * kpack commands - https://github.com/vmware-tanzu/kpack-cli/blob/master/docs/kp.md 
-* `kpack` - https://github.com/pivotal/kpack 
-
-## Building JVM Docker images
-To build the JVM image with the Java Paketo Buildpack, please run:
-```shell
-$ kp image save hello-function-jvm \ 
-    --tag <your-repo-prefix>/hello-function:jvm \ 
-    --git https://github.com/ddobrin/native-spring-cloud-run-with-graalvm.git \
-    --git-revision main \
-    --cluster-builder base \ 
-    --env BP_JVM_VERSION=11 \
-    --env BP_MAVEN_BUILD_ARGUMENTS="-Dmaven.test.skip=true package spring-boot:repackage" \
-    --wait 
-
-* your-repo-prefix - prefix for your Container Registry. Ex. Docker-desktop hello-function:jvm, GCR gcr.io/pa-ddobrin/hello-function:jvm
-* tag - image tag
-* git - repo location 
-* local-path - to build from a local download of the repo, replace "git" with "local-path"
-        --local-path ~/native-spring-cloud-run-with-graalvm
-* git-revision - the code branch in Git
-* cluster-builder - the Paketo builder used to build the image
-* BP_JVM_VERSION - Java version to build for, accepts 8, 11
-* wait - if you wish to observe the build taking place
-* BP_MAVEN_BUILD_ARGUMENTS - kpack/TBS works declaratively in K8s, therefore requires instructions for the `repackaging` goal to be triggered; local machine is imperative and `package` in pom.xml is sufficient. 
-```
-
-## Building Java Native Docker images
-To build the JVM image with the Java Native Paketo Buildpack, please run:
-```shell
-$ kp image save hello-function-native \ 
-    --tag <your-repo-prefix>/hello-function:native \ 
-    --git https://github.com/ddobrin/native-spring-cloud-run-with-graalvm.git \
-    --git-revision main \
-    --cluster-builder tiny \ 
-    --env BP_BOOT_NATIVE_IMAGE=1 \
-    --env BP_JVM_VERSION=11 \
-    --env BP_MAVEN_BUILD_ARGUMENTS="-Dmaven.test.skip=true package spring-boot:repackage" \
-    --env BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS="-Dspring.spel.ignore=true -Dspring.xml.ignore=true -Dspring.native.remove-yaml-support=true --enable-all-security-services" \
-    --wait 
-
-* your-repo-prefix - prefix for your Container Registry. Ex. Docker-desktop hello-function:native, GCR gcr.io/pa-ddobrin/hello-function:native 
-* tag - image tag
-* git - repo location 
-* local-path - to build from a local download of the repo, replace "git" with "local-path"
-        --local-path ~/native-spring-cloud-run-with-graalvm
-* git-revision - the code branch in Git
-* cluster-builder - the Paketo builder used to build the image
-* BP_BOOT_NATIVE_IMAGE - set to true builds a Spring Native image
-* BP_JVM_VERSION - Java version to build for, accepts 8, 11
-* wait - if you wish to observe the build taking place
-* BP_MAVEN_BUILD_ARGUMENTS - kpack/TBS works declaratively in K8s, therefore requires instructions for the `repackaging` goal to be triggered; local machine is imperative and `package` in pom.xml is sufficient. 
-* BP_BOOT_NATIVE_IMAGE_BUILD_ARGUMENTS - optimization arguments for the Native image to minimize image size
-```
