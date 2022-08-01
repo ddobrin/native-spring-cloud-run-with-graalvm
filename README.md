@@ -1,4 +1,4 @@
-### [Last updated: August, 2022]
+### [Last updated: August 1, 2022]
 ------
 **Learn how to build JVM and Native Java images with Spring Native and GraalVM, then deploy them on the Google CloudRun serverless compute platform.**
 
@@ -141,16 +141,16 @@ Observe the significant latency reduction in test execution:
 ```text
 JUnit JVM tests
 ...
-2022-07-22 14:51:41.130  INFO 72345 --- [           main] e.h.SpringNativeFunctionApplicationTests : Started SpringNativeFunctionApplicationTests in 0.971 seconds (JVM running for 1.811)
+2022-08-01 12:05:48.527  INFO 78674 --- [           main] e.h.SpringNativeFunctionApplicationTests : Started SpringNativeFunctionApplicationTests in 0.812 seconds (JVM running for 1.665)
 ...
 ```
 
 Native Tests
 ```text
-2022-07-22 14:48:43.476  INFO 71596 --- [           main] e.h.SpringNativeFunctionApplicationTests : Started SpringNativeFunctionApplicationTests in 0.165 seconds (JVM running for 0.226)
+12:12:24.087 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Using TestExecutionListeners: []
 com.example.hello.SpringNativeFunctionApplicationTests > contextLoads() SUCCESSFUL
 
-Test run finished after 184 ms
+Test run finished after 59 ms
 [         2 containers found      ]
 [         0 containers skipped    ]
 [         2 containers started    ]
@@ -243,16 +243,16 @@ Service [hello-function-native] revision [hello-function-native-00001-xah] has b
 # check that the project has been successfully deployed 
 # retrieve the URL where the app can be accessed and send a request
 gcloud run services list
-   SERVICE                   REGION       URL                                                       LAST DEPLOYED AT
-✔  hello-function-jvm        us-central1  https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app        2022-05-02T15:54:59.071861Z
-✔  hello-function-native     us-central1  https://hello-function-native-ieuwkt6jkq-uc.a.run.app     2022-05-02T15:55:39.381280Z
+   SERVICE                   REGION       URL                                                     LAST DEPLOYED AT
+✔  hello-function-jvm          us-central1   https://hello-function-jvm-...-uc.a.run.app          <email>  2022-08-01T16:04:13.864504Z
+✔  hello-function-native       us-central1   https://hello-function-native-...-uc.a.run.app       <email>  2022-08-01T16:02:58.368234Z
 
 # Test the JVM service
-curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app -d "from a JVM Image"
+curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-jvm-...-uc.a.run.app -d "from a JVM Image"
 Hello: from a JVM Image, Source: a Spring function !
 
 # Test the Native Java service
-curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-native-ieuwkt6jkq-uc.a.run.app -d "from a Native Image"
+curl -w'\n' -H 'Content-Type: text/plain' https://hello-function-native-...-uc.a.run.app -d "from a Native Image"
 Hello: from a Native Image, Source: a Spring function !
 
 # delete the service 
@@ -281,7 +281,7 @@ Allow unauthenticated invocations to [hello-function] (y/N)?  N
 Deploying container to Cloud Run service [hello-function-jvm] in project [optimize-serverless-apps] region [us-central1]
 ...
 Service [hello-function-jvm] revision [hello-function-jvm-00001-vel] has been deployed and is serving 100 percent of traffic.
-Service URL: https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app
+Service URL: https://hello-function-jvm-...-uc.a.run.app
 
 # deploy Native Java image
 gcloud run deploy hello-function-native \
@@ -295,14 +295,14 @@ Allow unauthenticated invocations to [hello-function] (y/N)?  N
 Deploying container to Cloud Run service [hello-function-native] in project [optimize-serverless-apps] region [us-central1]
 ...
 Service [hello-function-native] revision [hello-function-native-00001-fad] has been deployed and is serving 100 percent of traffic.
-Service URL: https://hello-function-native-ieuwkt6jkq-uc.a.run.app
+Service URL: https://hello-function-native-...-uc.a.run.app
 
 
 # retrieve the URL where the app can be accessed and send a request
 gcloud run services list
-   SERVICE               REGION       URL                                                     LAST DEPLOYED AT
-✔  hello-function-jvm    us-central1  https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app      2022-05-02T16:08:19.929918Z
-✔  hello-function-native us-central1  https://hello-function-native-ieuwkt6jkq-uc.a.run.app   2022-05-02T16:10:24.242963Z
+   SERVICE               REGION       URL                                                         LAST DEPLOYED AT
+✔  hello-function-jvm          us-central1   https://hello-function-jvm-...-uc.a.run.app          <email>  2022-08-01T16:04:13.864504Z
+✔  hello-function-native       us-central1   https://hello-function-native-...-uc.a.run.app       <email>  2022-08-01T16:02:58.368234Z
 
 # grant the Cloud Run Invoker role to the developer
 # substitute the developer email
@@ -328,11 +328,11 @@ alias gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-t
 
 # you can use the new alias to curl the service
 # invoke the JVM image service
-gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-jvm-ieuwkt6jkq-uc.a.run.app -d "from a JVM Image"
+gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-jvm-...-uc.a.run.app -d "from a JVM Image"
 Hello: from a JVM Image, Source: a Spring function !
 
 # invoke the Native image service
-gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-native-ieuwkt6jkq-uc.a.run.app -d "from a Native Image"
+gcurl -w'\n' -H 'Content-Type: text/plain' https://hello-function-native-...-uc.a.run.app -d "from a Native Image"
 Hello: from a Native Image, Source: a Spring function !
 ```
 
@@ -390,45 +390,50 @@ Excerpt from building the `optimized, production app`:
 ========================================================================================================================
 GraalVM Native Image: Generating 'hello-function' (executable)...
 ========================================================================================================================
-[1/7] Initializing...                                                                                    (6.6s @ 0.28GB)
- Version info: 'GraalVM 22.1.0 Java 17 CE'
+[1/7] Initializing...                                                                                    (7.2s @ 0.19GB)
+ Version info: 'GraalVM 22.2.0 Java 17 CE'
+ Java version info: '17.0.4+8-jvmci-22.2-b06'
  C compiler: cc (apple, x86_64, 13.1.6)
  Garbage collector: Serial GC
-[2/7] Performing analysis...  [*********]                                                               (55.7s @ 2.96GB)
-  14,534 (91.24%) of 15,930 classes reachable
-  23,004 (66.29%) of 34,702 fields reachable
-  71,840 (62.75%) of 114,485 methods reachable
-     788 classes,   283 fields, and 3,821 methods registered for reflection
-      62 classes,    69 fields, and    54 methods registered for JNI access
-[3/7] Building universe...                                                                               (6.1s @ 4.03GB)
-[4/7] Parsing methods...      [***]                                                                      (5.7s @ 5.48GB)
-[5/7] Inlining methods...     [*****]                                                                   (22.2s @ 3.68GB)
-[6/7] Compiling methods...    [******]                                                                  (44.8s @ 4.28GB)
-[7/7] Creating image...                                                                                  (6.6s @ 3.17GB)
-  31.01MB (45.31%) for code area:   46,856 compilation units
-  32.01MB (46.76%) for image heap:  10,117 classes and 350,421 objects
-   5.43MB ( 7.93%) for other data
-  68.45MB in total
+[2/7] Performing analysis...  [********]                                                                (51.2s @ 1.95GB)
+  14,442 (90.90%) of 15,888 classes reachable
+  22,701 (66.51%) of 34,131 fields reachable
+  68,679 (61.81%) of 111,106 methods reachable
+     786 classes,   281 fields, and 3,805 methods registered for reflection
+      63 classes,    69 fields, and    55 methods registered for JNI access
+       5 native libraries: -framework CoreServices, -framework Foundation, dl, pthread, z
+[3/7] Building universe...                                                                               (7.7s @ 4.66GB)
+[4/7] Parsing methods...      [***]                                                                     (10.0s @ 5.14GB)
+[5/7] Inlining methods...     [***]                                                                      (5.8s @ 3.46GB)
+[6/7] Compiling methods...    [********]                                                                (63.2s @ 3.83GB)
+[7/7] Creating image...                                                                                  (6.8s @ 2.68GB)
+  30.27MB (50.00%) for code area:    45,406 compilation units
+  29.99MB (49.54%) for image heap:  325,057 objects and 292 resources
+ 284.67KB ( 0.46%) for other data
+  60.54MB in total
 ------------------------------------------------------------------------------------------------------------------------
 Top 10 packages in code area:                               Top 10 object types in image heap:
-   1.67MB sun.security.ssl                                     6.60MB byte[] for code metadata
-   1.06MB java.util                                            5.88MB byte[] for general heap data
- 944.92KB com.oracle.svm.core.reflect                          3.55MB java.lang.Class
- 735.70KB com.sun.crypto.provider                              3.19MB java.lang.String
- 629.12KB org.apache.tomcat.util.net                           2.84MB byte[] for java.lang.String
- 551.64KB org.apache.catalina.core                             1.22MB com.oracle.svm.core.hub.DynamicHubCompanion
- 493.01KB org.apache.coyote.http2                              1.11MB java.lang.reflect.Method
- 483.48KB java.lang                                          674.16KB byte[] for reflection metadata
- 481.68KB java.util.concurrent                               661.21KB java.lang.String[]
- 472.85KB sun.security.x509                                  575.81KB java.util.HashMap$Node
-      ... 584 additional packages                                 ... 2983 additional object types
-                                           (use GraalVM Dashboard to see all)
+   1.66MB sun.security.ssl                                     6.48MB byte[] for code metadata
+   1.05MB java.util                                            3.56MB java.lang.Class
+ 732.48KB com.sun.crypto.provider                              3.06MB java.lang.String
+ 649.59KB org.apache.tomcat.util.net                           2.91MB byte[] for embedded resources
+ 566.29KB java.lang.invoke                                     2.61MB byte[] for java.lang.String
+ 551.31KB org.apache.catalina.core                             2.51MB byte[] for general heap data
+ 493.46KB org.apache.coyote.http2                              1.21MB com.oracle.svm.core.hub.DynamicHubCompanion
+ 487.28KB java.lang                                          805.55KB byte[] for reflection metadata
+ 478.34KB java.util.concurrent                               632.21KB java.lang.String[]
+ 469.79KB sun.security.x509                                  585.94KB java.util.HashMap$Node
+  22.89MB for 587 more packages                                4.74MB for 2973 more object types
 ------------------------------------------------------------------------------------------------------------------------
-                       19.2s (12.3% of total time) in 37 GCs | Peak RSS: 7.29GB | CPU load: 3.82
+                        6.0s (3.7% of total time) in 34 GCs | Peak RSS: 6.06GB | CPU load: 3.86
 ------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/ddobrin/work/dan/native-spring-cloud-run-with-graalvm/target/hello-function (executable)
+ /Users/ddobrin/work/dan/native-spring-cloud-run-with-graalvm/target/hello-function.build_artifacts.txt (txt)
+========================================================================================================================
 ```
 
-When building the `developer app`, less optimizations will be perfoirmed, thus speeding up the build. The change is more noticable the larger the number of classes is.
+When building the `developer app`, less optimizations will be performed, thus speeding the build up. The change is more noticable the larger the number of classes in your project is.
 
 Excerpt from building the `developer, non-prod app` - notice the `warning` at the top of this snippet:
 ```text
@@ -438,51 +443,66 @@ This feature should only be used during development and never for deployment.
 ========================================================================================================================
 GraalVM Native Image: Generating 'hello-function' (executable)...
 ========================================================================================================================
-[1/7] Initializing...                                                                                    (5.5s @ 0.28GB)
- Version info: 'GraalVM 22.1.0 Java 17 CE'
+[1/7] Initializing...                                                                                    (7.6s @ 0.20GB)
+ Version info: 'GraalVM 22.2.0 Java 17 CE'
+ Java version info: '17.0.4+8-jvmci-22.2-b06'
  C compiler: cc (apple, x86_64, 13.1.6)
  Garbage collector: Serial GC
-[2/7] Performing analysis...  [***********]                                                             (92.5s @ 3.92GB)
-  14,534 (91.83%) of 15,827 classes reachable
-  23,004 (66.29%) of 34,702 fields reachable
-  71,840 (64.67%) of 111,092 methods reachable
-     788 classes,   283 fields, and 3,821 methods registered for reflection
-      62 classes,    69 fields, and    54 methods registered for JNI access
-[3/7] Building universe...                                                                               (5.5s @ 5.01GB)
-[4/7] Parsing methods...      [***]                                                                      (7.8s @ 3.02GB)
-[5/7] Inlining methods...     [*****]                                                                   (11.6s @ 1.49GB)
-[6/7] Compiling methods...    [*****]                                                                   (29.0s @ 3.49GB)
-[7/7] Creating image...                                                                                  (6.5s @ 2.28GB)
-  31.68MB (45.46%) for code area:   46,863 compilation units
-  32.59MB (46.76%) for image heap:  10,117 classes and 350,543 objects
-   5.42MB ( 7.78%) for other data
-  69.70MB in total
+[2/7] Performing analysis...  [********]                                                                (40.6s @ 3.08GB)
+  14,442 (90.90%) of 15,888 classes reachable
+  22,701 (66.51%) of 34,131 fields reachable
+  68,679 (61.81%) of 111,106 methods reachable
+     786 classes,   281 fields, and 3,805 methods registered for reflection
+      63 classes,    69 fields, and    55 methods registered for JNI access
+       5 native libraries: -framework CoreServices, -framework Foundation, dl, pthread, z
+[3/7] Building universe...                                                                               (5.2s @ 2.32GB)
+[4/7] Parsing methods...      [***]                                                                      (5.0s @ 2.78GB)
+[5/7] Inlining methods...     [***]                                                                      (3.1s @ 1.19GB)
+[6/7] Compiling methods...    [******]                                                                  (42.0s @ 1.24GB)
+[7/7] Creating image...                                                                                  (8.5s @ 3.50GB)
+  30.93MB (50.06%) for code area:    45,412 compilation units
+  30.57MB (49.47%) for image heap:  325,090 objects and 292 resources
+ 293.46KB ( 0.46%) for other data
+  61.79MB in total
 ------------------------------------------------------------------------------------------------------------------------
 Top 10 packages in code area:                               Top 10 object types in image heap:
-   1.74MB sun.security.ssl                                     7.18MB byte[] for code metadata
-   1.07MB java.util                                            5.88MB byte[] for general heap data
- 965.24KB com.oracle.svm.core.reflect                          3.55MB java.lang.Class
- 787.03KB com.sun.crypto.provider                              3.20MB java.lang.String
- 618.85KB org.apache.tomcat.util.net                           2.84MB byte[] for java.lang.String
- 575.98KB org.apache.catalina.core                             1.22MB com.oracle.svm.core.hub.DynamicHubCompanion
- 499.90KB org.apache.coyote.http2                              1.11MB java.lang.reflect.Method
- 481.12KB sun.security.x509                                  672.49KB byte[] for reflection metadata
- 480.70KB java.lang                                          661.50KB java.lang.String[]
- 470.84KB java.util.concurrent                               575.81KB java.util.HashMap$Node
-      ... 584 additional packages                                 ... 2984 additional object types
-                                           (use GraalVM Dashboard to see all)
+   1.73MB sun.security.ssl                                     7.06MB byte[] for code metadata
+   1.07MB java.util                                            3.56MB java.lang.Class
+ 784.08KB com.sun.crypto.provider                              3.06MB java.lang.String
+ 640.49KB org.apache.tomcat.util.net                           2.91MB byte[] for embedded resources
+ 597.39KB java.lang.invoke                                     2.61MB byte[] for java.lang.String
+ 575.77KB org.apache.catalina.core                             2.51MB byte[] for general heap data
+ 501.10KB org.apache.coyote.http2                              1.21MB com.oracle.svm.core.hub.DynamicHubCompanion
+ 485.00KB java.lang                                          805.74KB byte[] for reflection metadata
+ 478.21KB sun.security.x509                                  632.36KB java.lang.String[]
+ 470.01KB java.util.concurrent                               585.94KB java.util.HashMap$Node
+  23.38MB for 587 more packages                                4.74MB for 2974 more object types
 ------------------------------------------------------------------------------------------------------------------------
-                       18.3s (11.0% of total time) in 33 GCs | Peak RSS: 6.93GB | CPU load: 3.40
+                        5.4s (4.4% of total time) in 35 GCs | Peak RSS: 6.12GB | CPU load: 3.60
 ------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/ddobrin/work/dan/native-spring-cloud-run-with-graalvm/target/hello-function (executable)
+ /Users/ddobrin/work/dan/native-spring-cloud-run-with-graalvm/target/hello-function.build_artifacts.txt (txt)
+========================================================================================================================
 ```
 
 Please note the build latency reduction [Prod/Dev]:
 ```
+GraalVM 22.2.0 - significant improvement vs 22.1.0
+[6/7] Compiling methods...    [********]                                (63.2s @ 3.83GB)
+[6/7] Compiling methods...    [******]                                  (42.0s @ 1.24GB)
+
+GraalVM 22.1.0
 [6/7] Compiling methods...    [******]                                  (44.8s @ 4.28GB)
 [6/7] Compiling methods...    [*****]                                   (29.0s @ 3.49GB)
 ```
 ... as well as lower RSS memory usage and lower CPU load
 ```
+GraalVM 22.2.0 - significant improvement vs 22.1.0
+6.0s (3.7% of total time) in 34 GCs | Peak RSS: 6.06GB | CPU load: 3.86
+5.4s (4.4% of total time) in 35 GCs | Peak RSS: 6.12GB | CPU load: 3.60
+
+GraalVM 22.1.0
 19.2s (12.3% of total time) in 37 GCs | Peak RSS: 7.29GB | CPU load: 3.82
 18.3s (11.0% of total time) in 33 GCs | Peak RSS: 6.93GB | CPU load: 3.40
 ```
@@ -496,8 +516,9 @@ In here the intention is to compare the numbers for the latest versions of Java 
 
 Native images are larger, however they are self-contained and do not require a JVM to run:
 ```text
--rw-r--r--   1 ddobrin  primarygroup  20513332 Jul 22 15:11 hello-function-1.0.0-exec.jar
--rwxr-xr-x   1 ddobrin  primarygroup  66372488 Jul 22 15:14 hello-function```
+-rw-r--r--   1 ddobrin  primarygroup  20513323  1 Aug 12:19 hello-function-1.0.0-exec.jar
+-rwxr-xr-x   1 ddobrin  primarygroup  63480256  1 Aug 12:22 hello-function
+```
 
 Docker images for JVM based apps are quite large, while native images are significantly smaller, as the Docker container does not require a JRE to run the Java app.
 The images shown below have been build with the [Paketo Java Buildpack](https://github.com/paketo-buildpacks/java) and the [Paketo Native Java Buildpack](https://github.com/paketo-buildpacks/native-image) respectively, withtou the need to build a Dockerfile.
@@ -546,7 +567,7 @@ JVM based app:
 ```shell
 java -jar target/hello-function-1.0.0-exec.jar
 ...
-2022-07-22 15:39:37.769  INFO 79506 --- [           main] c.e.h.SpringNativeFunctionApplication    : Started SpringNativeFunctionApplication in 1.979 seconds (JVM running for 2.365)
+2022-08-01 12:34:52.650  INFO 84442 --- [           main] c.e.h.SpringNativeFunctionApplication    : Started SpringNativeFunctionApplication in 2.047 seconds (JVM running for 2.464)
 ...
 ```
 
@@ -554,7 +575,7 @@ Native java app:
 ```shell
 target/hello-function
 ...
-2022-07-22 15:40:07.965  INFO 79589 --- [           main] c.e.h.SpringNativeFunctionApplication    : Started SpringNativeFunctionApplication in 0.074 seconds (JVM running for 0.077)
+2022-08-01 12:35:41.942  INFO 84640 --- [           main] c.e.h.SpringNativeFunctionApplication    : Started SpringNativeFunctionApplication in 0.064 seconds (JVM running for 0.067)
 ...
 ```
 
@@ -567,9 +588,9 @@ JVM based app:
 ps -o pid,rss,command | grep --color hello-function | awk '{$2=int($2/1024)"M";}{ print;}'
 
 # before running an HTTP request
-79764 287M /usr/bin/java -jar target/hello-function-1.0.0-exec.jar
+79764 245M /usr/bin/java -jar target/hello-function-1.0.0-exec.jar
 # after running 5 HTTP requests
-79764 290M /usr/bin/java -jar target/hello-function-1.0.0-exec.jar
+79764 271M /usr/bin/java -jar target/hello-function-1.0.0-exec.jar
 ```
 
 Native Java app:
@@ -581,7 +602,7 @@ ps -o pid,rss,command | grep --color hello-function | awk '{$2=int($2/1024)"M";}
 80061 49M target/hello-function
 
 # after running 5 HTTP requests
-80061 53M target/hello-function
+84640 54M ./target/hello-function
 ```
 
 ## Changelog

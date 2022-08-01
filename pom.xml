@@ -20,9 +20,6 @@
 		<spring-cloud.version>2021.0.3</spring-cloud.version>
         <spring-native.version>0.12.1</spring-native.version>
         <native-buildtools.version>0.9.13</native-buildtools.version>
-
-        <!-- <log4j2.version>2.17.1</log4j2.version> -->
-        
         <jvm-image-type>jvm</jvm-image-type>
         <native-image-type>native</native-image-type>
         <repackage.classifier/>
@@ -255,9 +252,9 @@
                         <version>${native-buildtools.version}</version>
                         <extensions>true</extensions>
                         <!-- Quick Build Developer Mode -->
-                        <!-- <configuration>
+                        <configuration>
                             <buildArgs>-Ob</buildArgs>
-                        </configuration> -->
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>test-native</id>
