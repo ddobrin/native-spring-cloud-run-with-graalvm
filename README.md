@@ -1,12 +1,13 @@
-### [Last updated: July 22, 2022]
+### [Last updated: August, 2022]
 ------
 **Learn how to build JVM and Native Java images with Spring Native and GraalVM, then deploy them on the Google CloudRun serverless compute platform.**
 
 
 The sample app provides a simple `Hello` web app based on Spring Boot and Spring Cloud Functions. 
-The focus is on building and deploying native images to a serverless platform. The update to this repo follows the latest release of GraalVM 22.1.0 with Java 17 support, which brings a series of significant improvements.
+The focus is on building and deploying native images to a serverless platform. The update to this repo follows the latest release of GraalVM 22.2.0 with Java 17 support, which brings a series of significant improvements.
 
 Intel and Apple Silicon builds are supported for the different build methods at this time.
+[GraalVM 22.2: Smaller JDK size, improved memory usage, better library support, and more!](https://medium.com/graalvm/graalvm-22-2-smaller-jdk-size-improved-memory-usage-better-library-support-and-more-cb34b5b68ec0)
 
 [Full details - GraalVM 22.1: Developer experience improvements, Apple Silicon builds, and more](https://medium.com/graalvm/graalvm-22-1-developer-experience-improvements-apple-silicon-builds-and-more-b7ac9a0f6066)
 
@@ -31,21 +32,21 @@ Intel and Apple Silicon builds are supported for the different build methods at 
 * Native Buildtools 0.9.13
 * Spring Cloud 2021.0.3
 * OpenJDK
-  * Openjdk version "17.0.3" 2022-04-19
+  * openjdk version "17.0.4" 2022-07-19
 * GraalVM CE
-  * OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06)
-  * OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06, mixed mode, sharing)
+  * OpenJDK Runtime Environment GraalVM CE 22.2.0 (build 17.0.4+8-jvmci-22.2-b06)
+  * OpenJDK 64-Bit Server VM GraalVM CE 22.2.0 (build 17.0.4+8-jvmci-22.2-b06, mixed mode, sharing)
 * Java compatibility level: Java 17
 
 ### `Known Issues`
-* Java Native Buildpacks are failing on M1 Macs as of today; Native Java App images can be built cleanly
+* Java Native Buildpacks are failing on M1 Macs as of today; Native Java App executables can be built cleanly though
 * UPX compression for M1 Macs is a known issue with a pending patch
 
 # Installation
 Install GraalVM from:
 * [from GraalVM Github repo](https://github.com/graalvm/graalvm-ce-builds/releases)
 * [using Homebrew](https://github.com/graalvm/homebrew-tap)
-* [SDKMan](https://sdkman.io/): `sdk install java 22.1.0.r17-grl`
+* [SDKMan](https://sdkman.io/): `sdk install java 22.2.0.r17-grl`
 
 Install the native-image builder before building native executables: 
 ```shell
@@ -71,7 +72,7 @@ curl -w'\n' -H 'Content-Type: text/plain' localhost:8080 -d "from a JVM app"
 ```bash 
 # switch to the GraalVM JDK for this build
 # ex, when using SDKman, validate that you use the GraaLVM compiler
-sdk use java 22.1.0.r17-grl
+sdk use java 22.2.0.r17-grl
 
 # build and run code using GraalVM
 # generating native tests is skipped for reduced build latency
@@ -127,7 +128,7 @@ To build native tests
 ```bash 
 # switch to the GraalVM JDK for this build
 # ex, when using SDKman, validate that you use the GraaLVM compiler
-sdk use java 22.1.0.r17-grl
+sdk use java 22.2.0.r17-grl
 
 # test the app with native tests
 ./mvnw -Pnative test
@@ -584,6 +585,7 @@ ps -o pid,rss,command | grep --color hello-function | awk '{$2=int($2/1024)"M";}
 ```
 
 ## Changelog
+* August 1, 2022: Updated with GraalVM 22.2.0, Java 17, buildtools 0.9.13
 * July 22, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.7.2. buildtools 0.9.11
 * April 30, 2022: Updated with GraalVM 22.1.0, Java 17, Spring Boot 2.6.6
 * May 2, 2022: Deploy to Cloud Run, analysis
