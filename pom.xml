@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.2</version>
+        <version>2.7.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
@@ -190,10 +190,7 @@
                                     <BP_NATIVE_IMAGE>1</BP_NATIVE_IMAGE>
                                     <BP_JVM_VERSION>17</BP_JVM_VERSION>
                                     <BP_BINARY_COMPRESSION_METHOD>upx</BP_BINARY_COMPRESSION_METHOD>
-                                    <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
-                                        <removeSpelSupport>true</removeSpelSupport>
-                                        <removeYamlSupport>true</removeYamlSupport>
-                                    </BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                                    <USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM>false</USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM>														                                    
                                 </env>
                             </image>
                         </configuration>
