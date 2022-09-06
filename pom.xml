@@ -249,9 +249,9 @@
                         <version>${native-buildtools.version}</version>
                         <extensions>true</extensions>
                         <!-- Quick Build Developer Mode -->
-                        <configuration>
+                        <!-- <configuration>
                             <buildArgs>-Ob</buildArgs>
-                        </configuration>
+                        </configuration> -->
                         <executions>
                             <execution>
                                 <id>test-native</id>
